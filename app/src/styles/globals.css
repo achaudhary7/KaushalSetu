@@ -1,0 +1,297 @@
+@import 'tailwindcss';
+
+/* ==========================================================================
+   KaushalSetu design tokens
+   --------------------------------------------------------------------------
+   Reference: docs/DESIGN-SYSTEM.md
+
+   Rules:
+   1. Never write a raw hex value in a component. Use a token.
+   2. Every colour is defined on bare :root first, then re-declared for dark.
+      A colour whose only definition lives inside a media query is a bug.
+   3. Dark mode responds to BOTH an explicit [data-theme] and the OS preference.
+   ========================================================================== */
+
+@theme {
+  /* ---- Primary: trust, institution, officialdom ------------------------ */
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-200: #c7d2fe;
+  --color-primary-300: #a5b4fc;
+  --color-primary-400: #818cf8;
+  --color-primary-500: #4f63d2;
+  --color-primary-600: #3b4fc4;
+  --color-primary-700: #2e3fa3;
+  --color-primary-800: #1e3a8a;
+  --color-primary-900: #1b2f6e;
+  --color-primary-950: #131f47;
+
+  /* ---- Accent: Ayush, growth, verification ----------------------------- */
+  --color-accent-50: #f0fdfa;
+  --color-accent-100: #ccfbf1;
+  --color-accent-200: #99f6e4;
+  --color-accent-300: #5eead4;
+  --color-accent-400: #2dd4bf;
+  --color-accent-500: #14b8a6;
+  --color-accent-600: #0d9488;
+  --color-accent-700: #0f766e;
+  --color-accent-800: #115e59;
+  --color-accent-900: #134e4a;
+  --color-accent-950: #042f2e;
+
+  /* ---- Highlight: CTA, Indian identity. Used sparingly. ---------------- */
+  --color-highlight-50: #fffbeb;
+  --color-highlight-100: #fef3c7;
+  --color-highlight-200: #fde68a;
+  --color-highlight-300: #fcd34d;
+  --color-highlight-400: #fbbf24;
+  --color-highlight-500: #f59e0b;
+  --color-highlight-600: #d97706;
+  --color-highlight-700: #b45309;
+  --color-highlight-800: #92400e;
+  --color-highlight-900: #78350f;
+  --color-highlight-950: #451a03;
+
+  /* ---- Neutrals -------------------------------------------------------- */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
+  --color-neutral-950: #020617;
+
+  /* ---- Typography ------------------------------------------------------ */
+  --font-sans:
+    var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: var(--font-mono-custom), ui-monospace, 'Cascadia Code', 'Courier New', monospace;
+
+  /* Modular scale, 1.200 minor third */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-6xl: 3.75rem;
+
+  /* ---- Shape ----------------------------------------------------------- */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+
+  /* ---- Motion: 150ms state change, 250ms entrance ---------------------- */
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+}
+
+/* ==========================================================================
+   Semantic tokens - light theme (the base declaration)
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  --color-bg: var(--color-neutral-0);
+  --color-surface: var(--color-neutral-0);
+  --color-surface-raised: var(--color-neutral-50);
+  --color-surface-sunken: var(--color-neutral-100);
+
+  --color-fg: var(--color-neutral-900);
+  --color-fg-muted: var(--color-neutral-600);
+  --color-fg-subtle: var(--color-neutral-500);
+  --color-fg-inverse: var(--color-neutral-0);
+
+  --color-border: var(--color-neutral-200);
+  --color-border-strong: var(--color-neutral-300);
+
+  --color-brand: var(--color-primary-800);
+  --color-brand-hover: var(--color-primary-700);
+  --color-brand-fg: var(--color-neutral-0);
+  --color-brand-subtle: var(--color-primary-50);
+
+  --color-success: var(--color-accent-700);
+  --color-success-subtle: var(--color-accent-50);
+  --color-warning: var(--color-highlight-700);
+  --color-warning-subtle: var(--color-highlight-50);
+  --color-danger: #b91c1c;
+  --color-danger-subtle: #fef2f2;
+  --color-info: var(--color-primary-700);
+  --color-info-subtle: var(--color-primary-50);
+
+  /* Verification tiers - load-bearing, see ADR-006. Must be distinguishable
+     at a glance AND in greyscale print. */
+  --color-tier-self: var(--color-neutral-400);
+  --color-tier-assessed: var(--color-primary-700);
+  --color-tier-endorsed: var(--color-accent-700);
+
+  --color-focus: var(--color-primary-600);
+
+  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(15 23 42 / 0.07), 0 2px 4px -2px rgb(15 23 42 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(15 23 42 / 0.08), 0 4px 6px -4px rgb(15 23 42 / 0.05);
+  --shadow-xl: 0 20px 25px -5px rgb(15 23 42 / 0.1), 0 8px 10px -6px rgb(15 23 42 / 0.05);
+
+  /* Named ladder. No arbitrary z-[9999] anywhere in the codebase. */
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-overlay: 1200;
+  --z-modal: 1300;
+  --z-popover: 1400;
+  --z-toast: 1500;
+}
+
+/* ==========================================================================
+   Dark theme - declared twice on purpose:
+   once for the explicit toggle, once for the OS preference when untoggled.
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --color-bg: var(--color-neutral-950);
+    --color-surface: var(--color-neutral-900);
+    --color-surface-raised: var(--color-neutral-800);
+    --color-surface-sunken: var(--color-neutral-950);
+
+    --color-fg: var(--color-neutral-50);
+    --color-fg-muted: var(--color-neutral-400);
+    --color-fg-subtle: var(--color-neutral-500);
+    --color-fg-inverse: var(--color-neutral-900);
+
+    --color-border: var(--color-neutral-800);
+    --color-border-strong: var(--color-neutral-700);
+
+    --color-brand: var(--color-primary-400);
+    --color-brand-hover: var(--color-primary-300);
+    --color-brand-fg: var(--color-neutral-950);
+    --color-brand-subtle: var(--color-primary-950);
+
+    --color-success: var(--color-accent-400);
+    --color-success-subtle: var(--color-accent-950);
+    --color-warning: var(--color-highlight-400);
+    --color-warning-subtle: var(--color-highlight-950);
+    --color-danger: #f87171;
+    --color-danger-subtle: #450a0a;
+    --color-info: var(--color-primary-400);
+    --color-info-subtle: var(--color-primary-950);
+
+    --color-tier-self: var(--color-neutral-500);
+    --color-tier-assessed: var(--color-primary-400);
+    --color-tier-endorsed: var(--color-accent-400);
+
+    --color-focus: var(--color-primary-400);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-bg: var(--color-neutral-950);
+  --color-surface: var(--color-neutral-900);
+  --color-surface-raised: var(--color-neutral-800);
+  --color-surface-sunken: var(--color-neutral-950);
+
+  --color-fg: var(--color-neutral-50);
+  --color-fg-muted: var(--color-neutral-400);
+  --color-fg-subtle: var(--color-neutral-500);
+  --color-fg-inverse: var(--color-neutral-900);
+
+  --color-border: var(--color-neutral-800);
+  --color-border-strong: var(--color-neutral-700);
+
+  --color-brand: var(--color-primary-400);
+  --color-brand-hover: var(--color-primary-300);
+  --color-brand-fg: var(--color-neutral-950);
+  --color-brand-subtle: var(--color-primary-950);
+
+  --color-success: var(--color-accent-400);
+  --color-success-subtle: var(--color-accent-950);
+  --color-warning: var(--color-highlight-400);
+  --color-warning-subtle: var(--color-highlight-950);
+  --color-danger: #f87171;
+  --color-danger-subtle: #450a0a;
+  --color-info: var(--color-primary-400);
+  --color-info-subtle: var(--color-primary-950);
+
+  --color-tier-self: var(--color-neutral-500);
+  --color-tier-assessed: var(--color-primary-400);
+  --color-tier-endorsed: var(--color-accent-400);
+
+  --color-focus: var(--color-primary-400);
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+* {
+  border-color: var(--color-border);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-synthesis-weight: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Focus rings are never removed. House style, applied globally. */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+::selection {
+  background-color: var(--color-primary-200);
+  color: var(--color-primary-950);
+}
+
+/* Skip link: visible only when focused. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  z-index: var(--z-toast);
+}
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-surface);
+  color: var(--color-fg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
