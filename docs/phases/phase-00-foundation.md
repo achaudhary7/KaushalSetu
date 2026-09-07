@@ -2,12 +2,12 @@
 
 | | |
 | --- | --- |
-| **Status** | 🟨 In Progress |
+| **Status** | ✅ Complete |
 | **Depends on** | Nothing |
 | **Blocks** | Every other phase |
 | **Estimate** | 3 focused hours |
 | **Started** | 2026-09-07 |
-| **Completed** | — |
+| **Completed** | 2026-09-07 |
 
 ## Objective
 
@@ -17,7 +17,7 @@ user-facing ships in this phase beyond a styled placeholder — that is correct 
 
 ## In scope
 
-- Next.js 15 App Router + TypeScript scaffold
+- Next.js 16 App Router + TypeScript scaffold
 - Tailwind CSS v4 with the token file stubbed
 - ESLint, Prettier, TypeScript strict mode, path aliases
 - Folder architecture for all sixteen phases
@@ -34,41 +34,41 @@ user-facing ships in this phase beyond a styled placeholder — that is correct 
 ## Deliverables
 
 ### Repository & tooling
-- [ ] `app/` scaffolded with Next.js 15 (App Router), TypeScript, Tailwind v4, `src/` directory, `@/*` alias
-- [ ] `tsconfig.json` on `strict: true` with `noUncheckedIndexedAccess`
-- [ ] ESLint configured (next/core-web-vitals + TypeScript rules)
-- [ ] Prettier configured with the Tailwind class-sorting plugin
-- [ ] `package.json` scripts: `dev`, `build`, `start`, `lint`, `format`, `typecheck`
-- [ ] `.gitignore` covering `node_modules`, `.next`, `.env*`, `*.db`, build output
-- [ ] Git repository initialised, first commit made
+- [x] `app/` scaffolded with Next.js 16 (App Router), TypeScript, Tailwind v4, `src/` directory, `@/*` alias
+- [x] `tsconfig.json` on `strict: true` with `noUncheckedIndexedAccess`
+- [x] ESLint configured (next/core-web-vitals + TypeScript rules)
+- [x] Prettier configured with the Tailwind class-sorting plugin
+- [x] `package.json` scripts: `dev`, `build`, `start`, `lint`, `format`, `typecheck`
+- [x] `.gitignore` covering `node_modules`, `.next`, `.env*`, `*.db`, build output
+- [x] Git repository initialised, first commit made
 
 ### Architecture
-- [ ] Folder skeleton created with a `.gitkeep` and a one-line README in each significant directory:
+- [x] Folder skeleton created with a `.gitkeep` and a one-line README in each significant directory:
       `src/app/(marketing)`, `src/app/(auth)`, `src/app/(dashboard)`, `src/app/api`,
       `src/components/{ui,layout,marketing,dashboard,icons,illustrations}`,
       `src/lib/{seo,auth,db,matching,utils,validators}`, `src/config`, `src/types`, `src/styles`,
       `prisma`, `public`, `tests/{unit,e2e}`
-- [ ] `src/config/site.ts` — single source of truth for name, tagline, URLs, social, contact, nav
-- [ ] `src/lib/env.ts` — Zod-validated environment access, fails loudly at boot
-- [ ] `.env.example` committed with every variable the project will need, documented
-- [ ] `src/app/layout.tsx` root layout with font loading, theme class and base metadata
-- [ ] `src/app/page.tsx` placeholder that proves the token system and fonts work
+- [x] `src/config/site.ts` — single source of truth for name, tagline, URLs, social, contact, nav
+- [x] `src/lib/env.ts` — Zod-validated environment access, fails loudly at boot
+- [x] `.env.example` committed with every variable the project will need, documented
+- [x] `src/app/layout.tsx` root layout with font loading, theme class and base metadata
+- [x] `src/app/page.tsx` placeholder that proves the token system and fonts work
 
 ### Documentation
-- [ ] `CONTEXT.md` — the read-first orientation file
-- [ ] `PLAN.md` — the master phase plan
-- [ ] `PROGRESS.md` — the live status board
-- [ ] `docs/ARCHITECTURE.md`
-- [ ] `docs/DESIGN-SYSTEM.md`
-- [ ] `docs/SEO-CHECKLIST.md`
-- [ ] `docs/DATA-MODEL.md`
-- [ ] `docs/PERFORMANCE.md`
-- [ ] `docs/SECURITY.md`
-- [ ] `docs/DEPLOYMENT.md`
-- [ ] `docs/DECISIONS.md` with ADR-001 … ADR-006 recorded
-- [ ] `docs/SITEMAP.md` — every planned route with its role gate and SEO status
-- [ ] All sixteen `docs/phases/phase-NN-*.md` specs
-- [ ] `README.md` — what this is, how to run it, where to read next
+- [x] `CONTEXT.md` — the read-first orientation file
+- [x] `PLAN.md` — the master phase plan
+- [x] `PROGRESS.md` — the live status board
+- [x] `docs/ARCHITECTURE.md`
+- [x] `docs/DESIGN-SYSTEM.md`
+- [x] `docs/SEO-CHECKLIST.md`
+- [x] `docs/DATA-MODEL.md`
+- [x] `docs/PERFORMANCE.md`
+- [x] `docs/SECURITY.md`
+- [x] `docs/DEPLOYMENT.md`
+- [x] `docs/DECISIONS.md` with ADR-001 … ADR-009 recorded
+- [x] `docs/SITEMAP.md` — every planned route with its role gate and SEO status
+- [x] All sixteen `docs/phases/phase-NN-*.md` specs
+- [x] `README.md` — what this is, how to run it, where to read next
 
 ## Acceptance criteria
 
@@ -103,16 +103,87 @@ src/styles/globals.css      Tailwind entry + design token declarations (stub)
 
 ## Phase Summary
 
-> **Fill this in before starting Phase 1. Mandatory.**
+*Completed 2026-09-07.*
 
-**What was built:**
+**What was built.** The repository, the toolchain, the documentation system and a verified
+placeholder page. `kaushalsetu/` holds the docs and tracking; `kaushalsetu/app/` holds the Next.js
+application. The design token system, the site identity module, validated environment access and the
+SEO metadata helper are all in place, so Phases 1 and 2 have somewhere to build rather than
+something to invent.
 
-**Key decisions made:**
+**Key decisions made.**
 
-**Files and directories created:**
+- **Next.js 16.3.4, not 15** — `create-next-app@latest` now ships 16 with React 19.2 and Turbopack
+  as the default bundler. No reason to pin backwards. All docs updated. Note the auto-generated
+  `app/AGENTS.md`: Next 16 has breaking changes from 15, and its bundled docs live in
+  `node_modules/next/dist/docs/`. **Consult those before writing routing or metadata code in
+  Phase 2** rather than assuming Next 14/15 conventions.
+- **Zod 4**, not 3 — current major. Error formatting uses `z.treeifyError()`, not the v3
+  `.format()`. `docs/ARCHITECTURE.md` updated.
+- **Docs live at the repo root, the app lives in `app/`.** This keeps the plan and the phase specs
+  visible on first open, rather than buried beside source.
+- **Design tokens are fuller than a Phase 0 "stub".** The complete colour ramp, semantic layer and
+  the three verification-tier colours are all declared now, because Phase 1 builds every component
+  against them and half a token system would have meant rewriting each one twice.
+- **The `noUncheckedIndexedAccess` flag is on.** It is stricter than most projects run and will
+  occasionally be irritating, but it catches exactly the class of bug (array access assumed
+  non-empty) that breaks a demo.
+- **Placeholder home page doubles as a token check.** It renders the semantic swatches and the phase
+  list, so a glance confirms tokens resolve and dark mode inverts correctly.
 
-**Deviations from the spec above, and why:**
+**Files and directories created.**
 
-**Anything the next phase must know:**
+```
+kaushalsetu/
+├── CONTEXT.md  PLAN.md  PROGRESS.md  README.md
+├── docs/  ARCHITECTURE · DATA-MODEL · DECISIONS(9 ADRs) · DEPLOYMENT
+│          DESIGN-SYSTEM · PERFORMANCE · SECURITY · SEO-CHECKLIST · SITEMAP
+│   └── phases/  phase-00 … phase-15  (16 specs)
+└── app/
+    ├── src/config/site.ts          product identity, single source of truth
+    ├── src/lib/env.ts              Zod-validated env, fails at boot by name
+    ├── src/lib/seo/metadata.ts     buildMetadata() — no page hand-writes SEO tags
+    ├── src/lib/utils/cn.ts
+    ├── src/styles/globals.css      full token system, light + dark + reduced-motion
+    ├── src/app/layout.tsx          fonts, base metadata, skip link, icons
+    ├── src/app/page.tsx            placeholder + token check
+    ├── next.config.ts              standalone output, security headers
+    ├── eslint.config.mjs  .prettierrc.json  tsconfig.json  .env.example
+    └── src/{components,lib,types}/…  folder skeleton for all 16 phases
+```
 
-**Verified by:**
+**Deviations from the spec above, and why.**
+
+- Next 16 / Zod 4 instead of 15 / 3, as above.
+- Directory `.gitkeep` files carry a one-line comment rather than a README per directory — the
+  architecture doc already documents what each holds, and per-directory READMEs would have drifted.
+- `src/lib/db/` created but empty; Prisma is not installed until Phase 3. Deliberate: no dependency
+  arrives before the phase that uses it.
+
+**Anything the next phase must know.**
+
+1. **Read `node_modules/next/dist/docs/` before writing Phase 2 routing/metadata code.** Next 16
+   changed things; do not assume older conventions.
+2. **Tokens are ready.** Build every Phase 1 component against `var(--color-*)`. Never a raw hex.
+3. **`buildMetadata()` exists and is unused so far.** Every Phase 2 page must go through it.
+4. **The placeholder `page.tsx` is disposable.** Phase 1 replaces it with `/style-guide`; Phase 2
+   replaces it with the real home page. Do not build on it.
+5. **The logo in `page.tsx` is a first draft inline SVG**, not the final mark. Phase 1 owns the real
+   `components/Logo.tsx`, the favicon set and the icon system.
+6. **Deferred installs**, each to its own phase: Radix (1), Prisma (3), Auth.js + bcrypt (4),
+   Recharts (10), @react-pdf/renderer + qrcode (8), Nodemailer (4), Vitest + Playwright (5/12).
+   Recharts 3.x and @react-pdf/renderer both need checking against React 19 when their phase lands.
+
+**Verified by.**
+
+| Check | Result |
+| --- | --- |
+| `npm run typecheck` | Clean |
+| `npm run lint` | Zero problems |
+| `npm run build` | Compiled in 35.1s, 2 static routes, no errors |
+| `npm run format` | All files formatted |
+| `npm run dev` → `GET /` | 200, served in 78ms warm |
+| `<title>` in response | `KaushalSetu — Academia-Industry Portal for Skills, Internships & Placements` |
+| Security headers | `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` all present |
+| Server-rendered content | Page copy present in raw HTML — confirmed crawlable without JS |
+| Git | Initialised, first commit `614f103` |

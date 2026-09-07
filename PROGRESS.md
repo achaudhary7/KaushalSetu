@@ -1,6 +1,6 @@
 # PROGRESS — KaushalSetu Live Status Board
 
-**Last updated:** 2026-09-07 · **Current phase:** Phase 0 — Foundation & Project Setup
+**Last updated:** 2026-09-07 · **Current phase:** Phase 1 — Design System & Brand Identity
 
 > This file is the source of truth for *where we are*. Update it at the end of every work session.
 > Detail lives in `docs/phases/`; this is the dashboard.
@@ -10,7 +10,7 @@
 ## Overall
 
 ```
-Phase  0  ██████████████████████████  🟨 In Progress
+Phase  0  ██████████████████████████  ✅ Complete
 Phase  1  ░░░░░░░░░░░░░░░░░░░░░░░░░░  ⬜ Not Started
 Phase  2  ░░░░░░░░░░░░░░░░░░░░░░░░░░  ⬜ Not Started
 Phase  3  ░░░░░░░░░░░░░░░░░░░░░░░░░░  ⬜ Not Started
@@ -28,7 +28,7 @@ Phase 14  ░░░░░░░░░░░░░░░░░░░░░░░�
 Phase 15  ░░░░░░░░░░░░░░░░░░░░░░░░░░  ⬜ Not Started
 ```
 
-**Completed:** 0 / 16 phases
+**Completed:** 1 / 16 phases
 
 ---
 
@@ -36,7 +36,7 @@ Phase 15  ░░░░░░░░░░░░░░░░░░░░░░░�
 
 | # | Phase | Status | Started | Completed | Summary written | Spec |
 | --- | --- | --- | --- | --- | --- | --- |
-| 0 | Foundation & Project Setup | 🟨 In Progress | 2026-09-07 | — | ⬜ | [spec](docs/phases/phase-00-foundation.md) |
+| 0 | Foundation & Project Setup | ✅ Complete | 2026-09-07 | 2026-09-07 | ✅ | [spec](docs/phases/phase-00-foundation.md) |
 | 1 | Design System & Brand | ⬜ Not Started | — | — | ⬜ | [spec](docs/phases/phase-01-design-system.md) |
 | 2 | Public Site & SEO Core | ⬜ Not Started | — | — | ⬜ | [spec](docs/phases/phase-02-public-seo.md) |
 | 3 | Data Model & Skill Taxonomy | ⬜ Not Started | — | — | ⬜ | [spec](docs/phases/phase-03-data-model.md) |
@@ -65,8 +65,17 @@ Append one entry per working session. Newest first.
   Prisma + SQLite→MySQL + Auth.js).
 - Resolved the hosting question: Hostinger *shared* hosting cannot run Node, so production targets a
   Hostinger **VPS**; local + Cloudflare Tunnel covers everything before that, free.
-- Wrote `CONTEXT.md`, `PLAN.md`, this file, and the sixteen phase specs.
-- Started Phase 0.
+- Wrote `CONTEXT.md`, `PLAN.md`, this file, nine reference docs and the sixteen phase specs.
+- **Completed Phase 0.** Scaffolded the app on Next.js **16.3.4** (newer than the planned 15 —
+  `create-next-app@latest` ships it; docs updated) with React 19.2, Tailwind v4, TypeScript strict
+  plus `noUncheckedIndexedAccess`, ESLint + Prettier, and the folder skeleton for all sixteen phases.
+- Built the full design token system (light, dark, reduced-motion, verification-tier colours),
+  `config/site.ts`, `lib/env.ts`, `lib/seo/metadata.ts`, the root layout and a placeholder home page
+  that doubles as a token check.
+- Verified: typecheck clean, lint clean, build clean (35.1s), dev server 200 with correct title,
+  security headers present, content server-rendered. Committed as `614f103`.
+- **Next:** Phase 1 — logo, favicon set, icon and illustration sets, UI primitives, Header/Footer,
+  `/style-guide`. Read `node_modules/next/dist/docs/` first; Next 16 has breaking changes from 15.
 
 ---
 

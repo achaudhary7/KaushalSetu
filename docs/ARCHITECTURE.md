@@ -5,15 +5,15 @@
 | Concern | Technology | Version |
 | --- | --- | --- |
 | Runtime | Node.js | 22 LTS (dev on 24) |
-| Framework | Next.js, App Router | 15.x |
+| Framework | Next.js, App Router | 16.x |
 | Language | TypeScript, `strict` | 5.x |
 | Styling | Tailwind CSS | 4.x |
 | Primitives | Radix UI | latest |
 | ORM | Prisma | 6.x |
 | Database | SQLite (dev) → MySQL 8 (prod) | — |
 | Auth | Auth.js (NextAuth) v5, credentials + JWT | 5.x |
-| Validation | Zod | 3.x |
-| Charts | Recharts, dynamically imported | 2.x |
+| Validation | Zod | 4.x |
+| Charts | Recharts, dynamically imported | 3.x |
 | PDF | @react-pdf/renderer | latest |
 | QR | qrcode | latest |
 | Email | Nodemailer (console transport in dev) | latest |

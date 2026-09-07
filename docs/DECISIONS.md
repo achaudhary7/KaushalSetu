@@ -13,7 +13,7 @@ Format: **ADR-NNN · Title · Date · Status** — Context / Decision / Conseque
 and the team is junior. But this project has two graded requirements that pull the other way: SEO
 must be first-class, and the design must look professional.
 
-**Decision.** Next.js 15 App Router with TypeScript.
+**Decision.** Next.js 16 App Router with TypeScript.
 
 **Consequences.** Server components give crawlable HTML with no extra work, which is precisely what
 the Google JS-SEO doc warns about getting wrong. Route-level code splitting, font optimisation and
@@ -134,6 +134,22 @@ it screened blind.
 **Consequences.** Requires a separate serialisation path for blind mode and care that no other
 endpoint leaks the same data. The stronger claim — and the one worth making on stage — is that this
 is real, not cosmetic, and that a sharp evaluator can open the network tab and confirm it.
+
+---
+
+## ADR-009 · Next.js 16 and Zod 4, not 15 and 3 · 2026-09-07 · Accepted
+
+**Context.** The plan named Next.js 15 and Zod 3. `create-next-app@latest` now scaffolds Next
+**16.3.4** with React 19.2 and Turbopack as the default bundler, and the current Zod major is 4.
+
+**Decision.** Take the current majors rather than pinning backwards.
+
+**Consequences.** No reason to start a new project on a superseded major. But Next 16 has real
+breaking changes from 15, and much published guidance (and model training data) still describes 14
+and 15 conventions. The scaffold auto-generates `app/AGENTS.md` pointing at bundled docs in
+`node_modules/next/dist/docs/` — **consult those before writing routing or metadata code**,
+particularly in Phase 2. Zod 4 changes error formatting: `z.treeifyError()` replaces v3's
+`.format()`, which `src/lib/env.ts` already uses.
 
 ---
 

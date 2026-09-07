@@ -16,7 +16,7 @@ Internships and Placement · **Sponsor:** Ministry of Ayush (AIIA)
 
 | Layer | Choice | Reasoning |
 | --- | --- | --- |
-| Framework | **Next.js 15 (App Router) + TypeScript** | Server components render real HTML on first response. That is the single biggest SEO lever — the Google JS-SEO doc in `../SEO IMPs/SEO Basic.txt` spends its whole length warning about content that only appears after JS executes. We sidestep the problem entirely. Also gives us file-based routing, per-route metadata, image/font optimisation and route-level code splitting for free. |
+| Framework | **Next.js 16 (App Router) + TypeScript** | Server components render real HTML on first response. That is the single biggest SEO lever — the Google JS-SEO doc in `../SEO IMPs/SEO Basic.txt` spends its whole length warning about content that only appears after JS executes. We sidestep the problem entirely. Also gives us file-based routing, per-route metadata, image/font optimisation and route-level code splitting for free. |
 | Styling | **Tailwind CSS v4 + CSS custom properties** | Design tokens live in CSS variables so light/dark and future white-labelling are one variable swap. Tailwind's output is purged to only what we use — typically under 15 KB gzipped. |
 | Components | **Hand-built primitives on Radix UI** | Radix gives accessible, unstyled behaviour (dialog focus trap, combobox keyboard nav, etc.). We style them once, in `components/ui/`, and never re-implement. No heavy component library shipped to the browser. |
 | Database | **SQLite in dev → MySQL 8 in production** | Zero-setup locally (a file, committable, resettable). Hostinger gives MySQL on every plan. Prisma abstracts the difference to one line in `schema.prisma`. |
