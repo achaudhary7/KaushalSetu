@@ -121,7 +121,17 @@ kaushalsetu/
 │   ├── SITEMAP.md          <- every route, its role gate, and its SEO status
 │   └── phases/
 │       └── phase-00-foundation.md ... phase-15-demo-pack.md
-└── app/                    <- the Next.js application (created in Phase 0)
+└── app/                    <- the Next.js application
+    ├── src/content/        <- typed content fixtures; the contract the schema satisfies
+    ├── prisma/             <- schema.prisma (56 models) + seed/ split by domain
+    └── scripts/            <- check-contrast.py, verify-db.ts
+```
+
+**Two commands worth knowing before anything else:**
+
+```bash
+npm run db:seed    # rebuild the demo world (~7s)
+npm run check      # typecheck + lint + format + WCAG contrast audit
 ```
 
 ## 8. The working rhythm (non-negotiable)

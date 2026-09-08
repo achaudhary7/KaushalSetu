@@ -174,6 +174,38 @@ own — keyboard, screen reader and axe passes remain Phase 12's work.
 
 ---
 
+## ADR-011 · Prisma 7 with a driver adapter, pinned off the `latest` tag · 2026-09-08 · Accepted
+
+**Context.** Two surprises during Phase 3 setup.
+
+First, `npm install prisma` resolved to **8.0.0-rc.13** while `@prisma/client` resolved to stable
+**7.10.0** — because Prisma's npm `latest` dist-tag currently points at a release candidate, with
+stable 7.10.0 sitting under `prev`. A mismatched CLI and client would have failed in ways that are
+tedious to diagnose.
+
+Second, Prisma 7 is a real break from 6: the datasource `url` is no longer allowed in the schema
+(it moves to `prisma.config.ts`), the client generates into the project rather than into
+`node_modules`, and a **driver adapter is mandatory**.
+
+**Decision.** Pin both `prisma` and `@prisma/client` to `^7.10.0` explicitly rather than taking
+`latest`. Use `@prisma/adapter-better-sqlite3` for development, configured in
+`src/lib/db/client.ts`. Generate the client to `src/generated/prisma` and git-ignore it.
+
+**Consequences.** The version pin is deliberate and must not be "helpfully" upgraded to `latest`
+until Prisma 8 is actually stable — a `npm update` that pulls in an RC will break the build. The
+adapter adds one dependency and about ten lines of wiring, and in exchange the provider swap for
+production is now cleaner than it was in Prisma 6: three places, none of them application code
+(see docs/DATA-MODEL.md). Also worth recording: **SQLite does accept Prisma enums** — this was
+tested rather than assumed, and it means schema principle 4 (enums, not free strings) holds in
+development as well as production.
+
+Two smaller notes. `prisma init` writes `.claude/`, `.windsurf/` and `.agents/` skill directories
+into the project; these were removed as unwanted. And `prisma migrate reset` refuses to run when it
+detects an AI agent, which is a good guard — it was run once in Phase 3 with explicit user consent
+against the local `dev.db`, and any future run needs the same.
+
+---
+
 <!--
 Template for new entries:
 

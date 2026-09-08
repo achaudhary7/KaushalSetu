@@ -1,0 +1,1449 @@
+// KaushalSetu data model
+//
+// Design principles (docs/phases/phase-03-data-model.md):
+//   1. The skill taxonomy is DATA, not code. Swapping Ayush for engineering is a seed
+//      change, never a code change.
+//   2. Soft-delete anything a user authored (`deletedAt`), rather than destroying it.
+//   3. Auditable state: applications, verifications and endorsements carry an event
+//      trail, not just a current status column.
+//   4. Enums, not free strings. A typo is not a valid state.
+//   5. Denormalise for analytics. Dashboards read snapshot tables, never live
+//      aggregates over application data.
+//
+// Provider portability (ADR-003): SQLite in development, MySQL 8 in production. No raw
+// SQL, no provider-specific types. Switching is a one-line change in prisma.config.ts
+// plus `provider` below.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ============================================================================
+// Enums
+// ============================================================================
+
+enum Role {
+  STUDENT
+  ACADEMICIAN
+  INDUSTRY
+  INSTITUTION
+  ADMIN
+}
+
+enum SkillType {
+  TECHNICAL
+  SOFT
+  DOMAIN
+  TOOL
+}
+
+enum SkillRelationType {
+  PREREQUISITE
+  RELATED
+  SUCCESSOR
+}
+
+/// The credibility mechanism of the whole product (ADR-006). Drives badge display,
+/// recruiter filtering, and the `verif` term in the Phase 6 match score.
+enum VerificationTier {
+  SELF_DECLARED
+  ASSESSMENT_VERIFIED
+  EMPLOYER_ENDORSED
+}
+
+enum CareerDomain {
+  AYUSH
+  TECHNOLOGY
+  BUSINESS
+  HEALTHCARE
+  OTHER
+}
+
+enum DemandLevel {
+  EMERGING
+  STEADY
+  GROWING
+}
+
+/// One Opportunity model covers students AND the entire Phase 9 faculty track.
+/// Get this abstraction right and Phase 9 costs almost nothing.
+enum OpportunityType {
+  INTERNSHIP
+  MICRO_INTERNSHIP
+  APPRENTICESHIP
+  JOB
+  LIVE_PROJECT
+  FDP
+  FACULTY_INTERNSHIP
+  CONSULTANCY
+  RESEARCH
+}
+
+enum OpportunityStatus {
+  DRAFT
+  PENDING_REVIEW
+  PUBLISHED
+  CLOSED
+  ARCHIVED
+  SUSPENDED
+}
+
+enum WorkMode {
+  ONSITE
+  REMOTE
+  HYBRID
+}
+
+enum ApplicationStatus {
+  APPLIED
+  UNDER_REVIEW
+  SHORTLISTED
+  INTERVIEW
+  OFFERED
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+/// Coded so rejections can be aggregated into the Phase 10 curriculum gap report.
+/// Free text is captured separately and never shown to the candidate.
+enum RejectionCode {
+  SKILL_GAP
+  EXPERIENCE
+  ELIGIBILITY
+  ROLE_FILLED
+  BETTER_FIT_FOUND
+  COMMUNICATION
+  NO_SHOW
+  OTHER
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTI_CHOICE
+  LIKERT
+  SCENARIO
+  NUMERIC
+  ORDERING
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+  SCORED
+  ABANDONED
+}
+
+enum LearningProvider {
+  SWAYAM
+  NPTEL
+  OTHER
+}
+
+enum PortfolioVisibility {
+  PUBLIC
+  UNLISTED
+  PRIVATE
+}
+
+enum CertificateType {
+  INTERNSHIP_COMPLETION
+  PROJECT_COMPLETION
+  ASSESSMENT
+  FDP_COMPLETION
+  WORKSHOP_ATTENDANCE
+  CHALLENGE_WINNER
+}
+
+enum MentorshipStatus {
+  REQUESTED
+  ACCEPTED
+  DECLINED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum EventType {
+  WORKSHOP
+  GUEST_LECTURE
+  CHALLENGE
+}
+
+enum SurveyWindow {
+  SIX_MONTH
+  TWELVE_MONTH
+}
+
+enum DocumentKind {
+  RESUME
+  CERTIFICATE
+  ACADEMIC_RECORD
+  INTERNSHIP_REPORT
+  ID_PROOF
+  COMPANY_REGISTRATION
+  OTHER
+}
+
+enum NotificationCategory {
+  APPLICATION
+  OPPORTUNITY
+  ASSESSMENT
+  ENDORSEMENT
+  CERTIFICATE
+  MENTORSHIP
+  SYSTEM
+}
+
+// ============================================================================
+// Identity & profiles
+// ============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  passwordHash  String?
+  name          String
+  avatarUrl     String?
+  role          Role
+  /// Optional by design — see docs/SECURITY.md. Collected so blind mode can REMOVE
+  /// it from a screening decision, never so it can influence one.
+  gender        String?
+  phone         String?
+  onboardedAt   DateTime?
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  accounts      Account[]
+  sessions      Session[]
+  studentProfile     StudentProfile?
+  academicianProfile AcademicianProfile?
+  industryProfile    IndustryProfile?
+  institutionProfile InstitutionProfile?
+
+  skills          UserSkill[]
+  attempts        AssessmentAttempt[]
+  applications    Application[]
+  projects        Project[]
+  achievements    Achievement[]
+  educations      Education[]
+  experiences     Experience[]
+  certifications  Certification[]
+  portfolio       PortfolioSettings?
+  certificates    Certificate[]        @relation("CertificateRecipient")
+  enrollments     Enrollment[]
+  learningPaths   LearningPath[]
+  documents       Document[]
+  notifications   Notification[]
+  messages        Message[]
+  auditLogs       AuditLog[]
+  mentorshipsAsMentor  Mentorship[]    @relation("Mentor")
+  mentorshipsAsMentee  Mentorship[]    @relation("Mentee")
+  endorsementsGiven    Endorsement[]   @relation("Endorser")
+  challengeSubmissions ChallengeSubmission[]
+  eventRegistrations   EventRegistration[]
+  placementRecords     PlacementRecord[]
+
+  @@index([role])
+  @@index([deletedAt])
+}
+
+/// Auth.js account linking. Present now so Phase 4 needs no migration.
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refreshToken      String?
+  accessToken       String?
+  expiresAt         Int?
+  tokenType         String?
+  scope             String?
+  idToken           String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Email verification and password reset. Single-use, expiring (docs/SECURITY.md).
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  purpose    String
+  usedAt     DateTime?
+
+  @@unique([identifier, token])
+}
+
+model StudentProfile {
+  id             String  @id @default(cuid())
+  userId         String  @unique
+  institutionId  String?
+  programme      String
+  branch         String?
+  yearOfStudy    Int
+  graduationYear Int?
+  cgpa           Float?
+  rollNumber     String?
+  regionId       String?
+  headline       String?
+  bio            String?
+  careerGoal     String?
+  /// Willing to relocate, for the eligibility gate in matching.
+  openToRelocate Boolean @default(true)
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  institution Institution? @relation(fields: [institutionId], references: [id])
+  region      Region?      @relation(fields: [regionId], references: [id])
+
+  @@index([institutionId])
+  @@index([programme, yearOfStudy])
+  @@index([regionId])
+}
+
+model AcademicianProfile {
+  id              String  @id @default(cuid())
+  userId          String  @unique
+  institutionId   String?
+  department      String
+  designation     String
+  qualifications  String?
+  yearsTeaching   Int?
+  industryMonths  Int     @default(0)
+  publications    Int     @default(0)
+  patents         Int     @default(0)
+  specialisations String?
+  researchAreas   String?
+  bio             String?
+  isPublic        Boolean @default(false)
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  institution Institution? @relation(fields: [institutionId], references: [id])
+
+  @@index([institutionId])
+  @@index([department])
+}
+
+model IndustryProfile {
+  id        String @id @default(cuid())
+  userId    String @unique
+  companyId String
+  jobTitle  String?
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId])
+}
+
+model InstitutionProfile {
+  id            String @id @default(cuid())
+  userId        String @unique
+  institutionId String
+  jobTitle      String?
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  institution Institution @relation(fields: [institutionId], references: [id])
+
+  @@index([institutionId])
+}
+
+// ============================================================================
+// Organisations & geography
+// ============================================================================
+
+model Company {
+  id           String             @id @default(cuid())
+  name         String
+  slug         String             @unique
+  sector       String
+  about        String?
+  websiteUrl   String?
+  logoUrl      String?
+  sizeBand     String?
+  /// CIN / GSTIN. The employer verification gate reads these before publishing.
+  cin          String?
+  gstin        String?
+  verification VerificationStatus @default(UNVERIFIED)
+  verifiedAt   DateTime?
+  verifiedById String?
+  rejectionNote String?
+  regionId     String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  deletedAt    DateTime?
+
+  region        Region?           @relation(fields: [regionId], references: [id])
+  recruiters    IndustryProfile[]
+  opportunities Opportunity[]
+  certificates  Certificate[]     @relation("CertificateIssuer")
+  endorsements  Endorsement[]
+
+  @@index([verification])
+  @@index([sector])
+  @@index([regionId])
+}
+
+model Institution {
+  id         String   @id @default(cuid())
+  name       String
+  slug       String   @unique
+  /// AISHE code, or NCISM code for Ayush institutions.
+  code       String?
+  type       String
+  about      String?
+  websiteUrl String?
+  regionId   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  region             Region?                   @relation(fields: [regionId], references: [id])
+  students           StudentProfile[]
+  academicians       AcademicianProfile[]
+  admins             InstitutionProfile[]
+  curriculumCoverage CurriculumSkillCoverage[]
+
+  @@index([regionId])
+}
+
+/// State / district reference data, for the Phase 6 regional demand map.
+model Region {
+  id       String  @id @default(cuid())
+  name     String
+  state    String
+  district String?
+  slug     String  @unique
+
+  companies     Company[]
+  institutions  Institution[]
+  students      StudentProfile[]
+  opportunities Opportunity[]
+  demand        SkillDemandSnapshot[]
+
+  @@index([state])
+}
+
+// ============================================================================
+// Skill taxonomy — data, not code
+// ============================================================================
+
+model SkillCategory {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  description String?
+  /// AYUSH / TECHNOLOGY / ... — lets a deployment filter the taxonomy by domain.
+  domain      CareerDomain @default(OTHER)
+  sortOrder   Int     @default(0)
+
+  skills Skill[]
+}
+
+model Skill {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  categoryId  String
+  type        SkillType
+  description String?
+  whatItIs    String?
+  whyItMatters String?
+  /// Written descriptors for proficiency 1-5, so a score means something concrete.
+  levelDescriptors String?
+  /// NCISM curriculum area, where the skill maps to one. The Ayush alignment.
+  ncismArea   String?
+  createdAt   DateTime  @default(now())
+
+  category         SkillCategory         @relation(fields: [categoryId], references: [id])
+  roleRequirements RoleSkillRequirement[]
+  userSkills       UserSkill[]
+  opportunitySkills OpportunitySkill[]
+  questions        Question[]
+  skillScores      SkillScore[]
+  resources        SkillResourceMap[]
+  endorsements     Endorsement[]
+  relationsFrom    SkillRelation[]       @relation("FromSkill")
+  relationsTo      SkillRelation[]       @relation("ToSkill")
+  demandSnapshots  SkillDemandSnapshot[]
+  curriculumCoverage CurriculumSkillCoverage[]
+  learningPathItems LearningPathItem[]
+
+  @@index([categoryId])
+  @@index([type])
+}
+
+model SkillRelation {
+  id          String            @id @default(cuid())
+  fromSkillId String
+  toSkillId   String
+  type        SkillRelationType
+
+  fromSkill Skill @relation("FromSkill", fields: [fromSkillId], references: [id], onDelete: Cascade)
+  toSkill   Skill @relation("ToSkill", fields: [toSkillId], references: [id], onDelete: Cascade)
+
+  @@unique([fromSkillId, toSkillId, type])
+  @@index([fromSkillId])
+  @@index([toSkillId])
+}
+
+// ============================================================================
+// Careers — the matching engine's reference data
+// ============================================================================
+
+model CareerPath {
+  id          String       @id @default(cuid())
+  title       String
+  slug        String       @unique
+  description String
+  summary     String
+  domain      CareerDomain
+  /// Which degrees lead here. JSON array — SQLite has no native list type, and this
+  /// is read-mostly reference data rather than something we filter on in SQL.
+  programmes  String
+  dayToDay    String
+  entryRoutes String
+  salaryMin   Int
+  salaryMax   Int
+  salaryNote  String?
+  demand      DemandLevel
+  regions     String
+  sortOrder   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  roles         JobRole[]
+  opportunities Opportunity[]
+
+  @@index([domain])
+}
+
+model JobRole {
+  id           String  @id @default(cuid())
+  title        String
+  slug         String  @unique
+  careerPathId String
+  description  String?
+  seniority    String  @default("ENTRY")
+
+  careerPath   CareerPath             @relation(fields: [careerPathId], references: [id], onDelete: Cascade)
+  requirements RoleSkillRequirement[]
+
+  @@index([careerPathId])
+}
+
+/// THE most important table in the product.
+///
+/// This is the vector the Phase 6 matching engine scores a student against. `weight`
+/// decides whether recommendations feel intelligent or arbitrary: a role's defining
+/// skill is 1.0, supporting skills 0.6-0.8, nice-to-haves 0.3.
+model RoleSkillRequirement {
+  id             String  @id @default(cuid())
+  jobRoleId      String
+  skillId        String
+  /// 0..1 — contribution to the match score.
+  weight         Float
+  /// 0..5 — the proficiency the role actually needs.
+  minProficiency Int
+  /// Must-haves are a hard gate: miss one and the score is penalised regardless
+  /// of how strong everything else is.
+  isCritical     Boolean @default(false)
+
+  jobRole JobRole @relation(fields: [jobRoleId], references: [id], onDelete: Cascade)
+  skill   Skill   @relation(fields: [skillId], references: [id])
+
+  @@unique([jobRoleId, skillId])
+  @@index([jobRoleId])
+  @@index([skillId])
+}
+
+// ============================================================================
+// Assessment & skill profile
+// ============================================================================
+
+model Assessment {
+  id           String   @id @default(cuid())
+  title        String
+  slug         String   @unique
+  description  String?
+  /// Which programmes this assessment is aimed at. JSON array.
+  programmes   String?
+  durationMins Int      @default(45)
+  isActive     Boolean  @default(true)
+  /// Days before a retake is allowed — the anti-gaming cooldown.
+  cooldownDays Int      @default(30)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  questions Question[]
+  attempts  AssessmentAttempt[]
+}
+
+model Question {
+  id           String       @id @default(cuid())
+  assessmentId String
+  skillId      String?
+  section      String
+  type         QuestionType
+  prompt       String
+  /// JSON array of { id, label, score } — scoring weight lives on the option.
+  options      String?
+  /// Correct option id(s) for objective types. JSON array.
+  correct      String?
+  /// Contribution of this question to its skill's score.
+  weight       Float        @default(1)
+  difficulty   Int          @default(2)
+  /// Reverse-coded Likert items, used for the consistency check in Phase 5.
+  isReversed   Boolean      @default(false)
+  /// Question id unlocked by a strong answer — cheap adaptive branching.
+  unlocksQuestionId String?
+  sortOrder    Int          @default(0)
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  skill      Skill?     @relation(fields: [skillId], references: [id])
+  answers    Answer[]
+
+  @@index([assessmentId])
+  @@index([skillId])
+}
+
+model AssessmentAttempt {
+  id           String        @id @default(cuid())
+  userId       String
+  assessmentId String
+  status       AttemptStatus @default(IN_PROGRESS)
+  startedAt    DateTime      @default(now())
+  submittedAt  DateTime?
+  scoredAt     DateTime?
+  /// Denormalised headline score, 0..100.
+  overallScore Float?
+  ipAddress    String?
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessment  Assessment   @relation(fields: [assessmentId], references: [id])
+  answers     Answer[]
+  skillScores SkillScore[]
+  userSkills  UserSkill[]
+
+  @@index([userId, status])
+  @@index([assessmentId])
+}
+
+model Answer {
+  id         String   @id @default(cuid())
+  attemptId  String
+  questionId String
+  /// JSON — shape depends on question type.
+  value      String
+  /// Score awarded for this answer after marking.
+  score      Float?
+  answeredAt DateTime @default(now())
+
+  attempt  AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question Question          @relation(fields: [questionId], references: [id])
+
+  @@unique([attemptId, questionId])
+  @@index([attemptId])
+}
+
+model SkillScore {
+  id          String @id @default(cuid())
+  attemptId   String
+  skillId     String
+  /// Normalised 0..5.
+  proficiency Float
+  rawScore    Float
+  maxScore    Float
+  /// 0..1 — lower when few questions covered this skill. Surfaced in the UI rather
+  /// than pretending to precision we do not have.
+  confidence  Float  @default(1)
+  questionsAsked Int @default(0)
+
+  attempt AssessmentAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  skill   Skill             @relation(fields: [skillId], references: [id])
+
+  @@unique([attemptId, skillId])
+  @@index([skillId])
+}
+
+/// A user's current skill profile. One row per user per skill, holding the best
+/// evidence we have — and the tier that evidence earns.
+model UserSkill {
+  id               String           @id @default(cuid())
+  userId           String
+  skillId          String
+  proficiency      Float
+  verificationTier VerificationTier @default(SELF_DECLARED)
+  /// The attempt that verified this, when tier is ASSESSMENT_VERIFIED.
+  attemptId        String?
+  confidence       Float            @default(1)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill        Skill              @relation(fields: [skillId], references: [id])
+  attempt      AssessmentAttempt? @relation(fields: [attemptId], references: [id])
+  endorsements Endorsement[]
+
+  @@unique([userId, skillId])
+  @@index([userId, verificationTier])
+  @@index([skillId])
+}
+
+// ============================================================================
+// Opportunities
+// ============================================================================
+
+model Opportunity {
+  id             String            @id @default(cuid())
+  title          String
+  slug           String            @unique
+  type           OpportunityType
+  status         OpportunityStatus @default(DRAFT)
+  companyId      String
+  careerPathId   String?
+  regionId       String?
+  city           String
+  mode           WorkMode
+  summary        String
+  responsibilities String
+  /// Monthly or annual, per `stipendPeriod`. Null means unpaid, which we surface
+  /// honestly rather than hide.
+  stipendMin     Int?
+  stipendMax     Int?
+  stipendPeriod  String?
+  durationWeeks  Int?
+  openings       Int               @default(1)
+  postedAt       DateTime          @default(now())
+  deadline       DateTime
+  /// Recruiter-side blind first-pass screening (ADR-008). Recorded so a company can
+  /// demonstrate it screened blind.
+  blindScreening Boolean           @default(false)
+  viewCount      Int               @default(0)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  deletedAt      DateTime?
+
+  company      Company              @relation(fields: [companyId], references: [id])
+  careerPath   CareerPath?          @relation(fields: [careerPathId], references: [id])
+  region       Region?              @relation(fields: [regionId], references: [id])
+  skills       OpportunitySkill[]
+  eligibility  EligibilityCriteria?
+  applications Application[]
+  reports      OpportunityReport[]
+  certificates Certificate[]
+
+  @@index([status, type, deadline])
+  @@index([companyId])
+  @@index([regionId])
+  @@index([careerPathId])
+}
+
+model OpportunitySkill {
+  id             String  @id @default(cuid())
+  opportunityId  String
+  skillId        String
+  minProficiency Int
+  weight         Float   @default(0.6)
+  isCritical     Boolean @default(false)
+
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  skill       Skill       @relation(fields: [skillId], references: [id])
+
+  @@unique([opportunityId, skillId])
+  @@index([skillId])
+}
+
+/// Hard gate in matching — met or not, never partially weighted.
+model EligibilityCriteria {
+  id            String  @id @default(cuid())
+  opportunityId String  @unique
+  /// JSON arrays.
+  programmes    String
+  years         String
+  minCgpa       Float?
+  regionsAllowed String?
+  graduationYearMin Int?
+  graduationYearMax Int?
+
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+}
+
+/// The anti-scam control. Students report; reports reach a human review queue.
+model OpportunityReport {
+  id            String    @id @default(cuid())
+  opportunityId String
+  reportedById  String?
+  reason        String
+  detail        String?
+  resolvedAt    DateTime?
+  resolutionNote String?
+  createdAt     DateTime  @default(now())
+
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+
+  @@index([opportunityId])
+  @@index([resolvedAt])
+}
+
+// ============================================================================
+// Applications
+// ============================================================================
+
+model Application {
+  id            String            @id @default(cuid())
+  userId        String
+  opportunityId String
+  status        ApplicationStatus @default(APPLIED)
+  coverNote     String?
+  /// Score at the time of applying, frozen so the pipeline is reproducible even if
+  /// the profile changes afterwards.
+  matchScore    Float?
+  /// The full explanation payload, stored as JSON so "how was this computed?" can
+  /// still be answered months later.
+  matchBreakdown String?
+  appliedAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  withdrawnAt   DateTime?
+
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  opportunity     Opportunity        @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  events          ApplicationEvent[]
+  rejectionReason RejectionReason?
+  interviews      Interview[]
+  offer           Offer?
+  placement       PlacementRecord?
+
+  @@unique([userId, opportunityId])
+  @@index([opportunityId, status])
+  @@index([userId, status])
+}
+
+/// The status trail. Every transition is recorded, not just the current value.
+model ApplicationEvent {
+  id            String            @id @default(cuid())
+  applicationId String
+  fromStatus    ApplicationStatus?
+  toStatus      ApplicationStatus
+  actorId       String?
+  note          String?
+  /// True when the transition happened while blind screening was active.
+  wasBlind      Boolean           @default(false)
+  createdAt     DateTime          @default(now())
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+}
+
+/// Feeds the Phase 10 reverse skill-gap report. `detail` is NEVER shown to the
+/// candidate — students see aggregate cohort patterns only.
+model RejectionReason {
+  id            String        @id @default(cuid())
+  applicationId String        @unique
+  code          RejectionCode
+  detail        String?
+  /// Specific skills the candidate fell short on. JSON array of skill ids.
+  skillIds      String?
+  createdAt     DateTime      @default(now())
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([code])
+}
+
+model Interview {
+  id            String   @id @default(cuid())
+  applicationId String
+  scheduledAt   DateTime
+  durationMins  Int      @default(45)
+  mode          WorkMode @default(REMOTE)
+  location      String?
+  interviewer   String?
+  notes         String?
+  rating        Int?
+  completedAt   DateTime?
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+}
+
+model Offer {
+  id            String    @id @default(cuid())
+  applicationId String    @unique
+  issuedAt      DateTime  @default(now())
+  respondBy     DateTime?
+  compensation  Int?
+  compensationPeriod String?
+  startDate     DateTime?
+  acceptedAt    DateTime?
+  declinedAt    DateTime?
+  declineReason String?
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+// ============================================================================
+// Portfolio & credentials
+// ============================================================================
+
+model PortfolioSettings {
+  id             String              @id @default(cuid())
+  userId         String              @unique
+  username       String              @unique
+  visibility     PortfolioVisibility @default(PRIVATE)
+  showEmail      Boolean             @default(false)
+  showPhone      Boolean             @default(false)
+  headline       String?
+  about          String?
+  sectionOrder   String?
+  updatedAt      DateTime            @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([visibility])
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  userId      String
+  title       String
+  description String
+  role        String?
+  outcomes    String?
+  /// JSON array of skill names used.
+  skillsUsed  String?
+  url         String?
+  repoUrl     String?
+  startedAt   DateTime?
+  completedAt DateTime?
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  deletedAt   DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Achievement {
+  id          String    @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  issuer      String?
+  achievedAt  DateTime?
+  sortOrder   Int       @default(0)
+  deletedAt   DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Education {
+  id            String    @id @default(cuid())
+  userId        String
+  institution   String
+  programme     String
+  specialisation String?
+  startYear     Int
+  endYear       Int?
+  grade         String?
+  sortOrder     Int       @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Experience {
+  id          String    @id @default(cuid())
+  userId      String
+  organisation String
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime?
+  isCurrent   Boolean   @default(false)
+  sortOrder   Int       @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// External certifications the user claims (as opposed to Certificates we issue).
+model Certification {
+  id         String    @id @default(cuid())
+  userId     String
+  title      String
+  issuer     String
+  issuedAt   DateTime?
+  expiresAt  DateTime?
+  credentialId String?
+  credentialUrl String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Promotes a UserSkill to EMPLOYER_ENDORSED. Immutable once given, attributed and
+/// dated — attribution is the whole point.
+model Endorsement {
+  id          String    @id @default(cuid())
+  userSkillId String
+  skillId     String
+  endorserId  String
+  companyId   String?
+  comment     String?
+  createdAt   DateTime  @default(now())
+  revokedAt   DateTime?
+  revokeReason String?
+
+  userSkill UserSkill @relation(fields: [userSkillId], references: [id], onDelete: Cascade)
+  skill     Skill     @relation(fields: [skillId], references: [id])
+  endorser  User      @relation("Endorser", fields: [endorserId], references: [id])
+  company   Company?  @relation(fields: [companyId], references: [id])
+
+  @@index([userSkillId])
+  @@index([companyId])
+}
+
+/// QR-verifiable credential (ADR-007). `verificationCode` resolves to the public
+/// /verify/[code] page — no login required.
+model Certificate {
+  id               String          @id @default(cuid())
+  verificationCode String          @unique
+  type             CertificateType
+  recipientId      String
+  issuerCompanyId  String?
+  opportunityId    String?
+  title            String
+  description      String?
+  /// Skills demonstrated. JSON array of skill names.
+  skills           String?
+  mentorName       String?
+  startDate        DateTime?
+  endDate          DateTime?
+  issuedAt         DateTime        @default(now())
+  revokedAt        DateTime?
+  revokeReason     String?
+
+  recipient     User                          @relation("CertificateRecipient", fields: [recipientId], references: [id])
+  issuerCompany Company?                      @relation("CertificateIssuer", fields: [issuerCompanyId], references: [id])
+  opportunity   Opportunity?                  @relation(fields: [opportunityId], references: [id])
+  verifications CertificateVerificationLog[]
+
+  @@index([recipientId])
+  @@index([issuerCompanyId])
+}
+
+/// Every verification attempt, so "certificates verified this month" is a real number.
+model CertificateVerificationLog {
+  id            String   @id @default(cuid())
+  certificateId String
+  ipHash        String?
+  userAgent     String?
+  wasFound      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  certificate Certificate @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+
+  @@index([certificateId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// Learning
+// ============================================================================
+
+model LearningResource {
+  id            String           @id @default(cuid())
+  title         String
+  provider      LearningProvider
+  url           String
+  description   String?
+  isFree        Boolean          @default(true)
+  durationHours Int?
+  createdAt     DateTime         @default(now())
+
+  skills    SkillResourceMap[]
+  pathItems LearningPathItem[]
+  enrollments Enrollment[]
+
+  @@index([provider])
+}
+
+model SkillResourceMap {
+  id         String @id @default(cuid())
+  skillId    String
+  resourceId String
+  /// How directly this resource addresses the skill, 0..1.
+  relevance  Float  @default(1)
+
+  skill    Skill            @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  resource LearningResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([skillId, resourceId])
+  @@index([skillId])
+}
+
+model LearningPath {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  targetRole  String?
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
+
+  user  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items LearningPathItem[]
+
+  @@index([userId])
+}
+
+model LearningPathItem {
+  id             String  @id @default(cuid())
+  learningPathId String
+  resourceId     String
+  skillId        String?
+  sortOrder      Int     @default(0)
+  /// Projected proficiency gain, so the student sees why this is worth doing.
+  projectedGain  Float?
+  completedAt    DateTime?
+
+  learningPath LearningPath     @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+  resource     LearningResource @relation(fields: [resourceId], references: [id])
+  skill        Skill?           @relation(fields: [skillId], references: [id])
+
+  @@index([learningPathId])
+}
+
+model Enrollment {
+  id          String    @id @default(cuid())
+  userId      String
+  resourceId  String
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resource LearningResource @relation(fields: [resourceId], references: [id])
+
+  @@unique([userId, resourceId])
+  @@index([userId])
+}
+
+// ============================================================================
+// Collaboration
+// ============================================================================
+
+model Mentorship {
+  id          String           @id @default(cuid())
+  mentorId    String
+  menteeId    String
+  status      MentorshipStatus @default(REQUESTED)
+  /// True when matched through the alumni route — cheaper and higher response rate.
+  isAlumni    Boolean          @default(false)
+  topic       String?
+  goals       String?
+  requestedAt DateTime         @default(now())
+  acceptedAt  DateTime?
+  completedAt DateTime?
+  mentorRating Int?
+  menteeRating Int?
+
+  mentor   User                @relation("Mentor", fields: [mentorId], references: [id])
+  mentee   User                @relation("Mentee", fields: [menteeId], references: [id])
+  sessions MentorshipSession[]
+
+  @@index([mentorId, status])
+  @@index([menteeId, status])
+}
+
+model MentorshipSession {
+  id           String   @id @default(cuid())
+  mentorshipId String
+  scheduledAt  DateTime
+  durationMins Int      @default(30)
+  agenda       String?
+  notes        String?
+  completedAt  DateTime?
+
+  mentorship Mentorship @relation(fields: [mentorshipId], references: [id], onDelete: Cascade)
+
+  @@index([mentorshipId])
+}
+
+/// Workshops, guest lectures and innovation challenges share one model — same
+/// abstraction argument as Opportunity.
+model Event {
+  id          String    @id @default(cuid())
+  type        EventType
+  title       String
+  slug        String    @unique
+  description String
+  hostName    String
+  startsAt    DateTime
+  endsAt      DateTime?
+  mode        WorkMode  @default(REMOTE)
+  location    String?
+  capacity    Int?
+  /// Challenge-only fields.
+  prizes      String?
+  rubric      String?
+  submissionDeadline DateTime?
+  createdAt   DateTime  @default(now())
+
+  registrations EventRegistration[]
+  submissions   ChallengeSubmission[]
+
+  @@index([type, startsAt])
+}
+
+model EventRegistration {
+  id           String    @id @default(cuid())
+  eventId      String
+  userId       String
+  registeredAt DateTime  @default(now())
+  attendedAt   DateTime?
+  feedback     String?
+  rating       Int?
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+}
+
+model ChallengeSubmission {
+  id          String   @id @default(cuid())
+  eventId     String
+  userId      String
+  teamName    String?
+  title       String
+  description String
+  url         String?
+  submittedAt DateTime @default(now())
+  score       Float?
+  rank        Int?
+  judgeNotes  String?
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+}
+
+// ============================================================================
+// Outcomes & analytics — the differentiators the brief never asked for
+// ============================================================================
+
+model PlacementRecord {
+  id            String   @id @default(cuid())
+  userId        String
+  applicationId String?  @unique
+  companyName   String
+  roleTitle     String
+  startedAt     DateTime
+  compensation  Int?
+  institutionId String?
+  createdAt     DateTime @default(now())
+
+  user        User            @relation(fields: [userId], references: [id])
+  application Application?    @relation(fields: [applicationId], references: [id])
+  surveys     OutcomeSurvey[]
+
+  @@index([userId])
+  @@index([institutionId])
+}
+
+/// The longitudinal differentiator. Turns "we placed 200 students" into "84% were
+/// still in a relevant role a year later".
+model OutcomeSurvey {
+  id                String       @id @default(cuid())
+  placementRecordId String
+  window            SurveyWindow
+  sentAt            DateTime     @default(now())
+  respondedAt       DateTime?
+  stillEmployed     Boolean?
+  roleRelevant      Boolean?
+  /// 1..5
+  satisfaction      Int?
+  wouldRecommend    Boolean?
+  compensationBand  String?
+  comment           String?
+
+  placementRecord PlacementRecord @relation(fields: [placementRecordId], references: [id], onDelete: Cascade)
+
+  @@unique([placementRecordId, window])
+  @@index([window, respondedAt])
+}
+
+/// Denormalised on purpose (principle 5). Live aggregation over applications would
+/// never feel fast enough in a demo.
+model SkillDemandSnapshot {
+  id         String   @id @default(cuid())
+  skillId    String
+  regionId   String?
+  /// e.g. "2026-Q3"
+  period     String
+  demandCount Int     @default(0)
+  /// Sum of weights across postings — demand intensity, not just a headcount.
+  demandWeight Float  @default(0)
+  /// How many candidates in the pool have this skill at the required level.
+  supplyCount Int     @default(0)
+  computedAt DateTime @default(now())
+
+  skill  Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  region Region? @relation(fields: [regionId], references: [id])
+
+  @@unique([skillId, regionId, period])
+  @@index([period])
+  @@index([skillId])
+}
+
+/// The other half of the reverse skill-gap report: what the syllabus actually covers.
+model CurriculumSkillCoverage {
+  id            String   @id @default(cuid())
+  institutionId String
+  skillId       String
+  programme     String
+  /// Is it taught at all?
+  isCovered     Boolean  @default(false)
+  /// To what level, 0..5 — "mentioned once" is not the same as "taught properly".
+  depth         Int      @default(0)
+  courseCode    String?
+  notes         String?
+  updatedAt     DateTime @updatedAt
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  skill       Skill       @relation(fields: [skillId], references: [id])
+
+  @@unique([institutionId, skillId, programme])
+  @@index([institutionId])
+}
+
+// ============================================================================
+// Platform
+// ============================================================================
+
+model Notification {
+  id        String               @id @default(cuid())
+  userId    String
+  category  NotificationCategory
+  title     String
+  body      String?
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime             @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+}
+
+/// Messaging is relationship-gated (Phase 11): a thread can only exist where an
+/// application, mentorship or project connects the parties.
+model Thread {
+  id           String   @id @default(cuid())
+  subject      String?
+  /// What justifies this thread existing — 'application' | 'mentorship' | 'project'.
+  contextType  String
+  contextId    String
+  createdAt    DateTime @default(now())
+  lastMessageAt DateTime @default(now())
+
+  messages Message[]
+
+  @@index([contextType, contextId])
+}
+
+model Message {
+  id       String   @id @default(cuid())
+  threadId String
+  senderId String
+  body     String
+  sentAt   DateTime @default(now())
+  readAt   DateTime?
+
+  thread Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  sender User   @relation(fields: [senderId], references: [id])
+
+  @@index([threadId])
+}
+
+/// Metadata only. The file itself lives outside the web root and is served through
+/// an authorised route issuing short-lived signed URLs (docs/SECURITY.md).
+model Document {
+  id           String       @id @default(cuid())
+  userId       String
+  kind         DocumentKind
+  originalName String
+  storageKey   String       @unique
+  mimeType     String
+  sizeBytes    Int
+  /// Magic-byte check result, not just the extension.
+  contentVerified Boolean   @default(false)
+  scanStatus   String       @default("PENDING")
+  uploadedAt   DateTime     @default(now())
+  deletedAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind])
+}
+
+/// Every sensitive action: verification decisions, endorsements, certificate issue
+/// and revocation, admin actions, exports, and access to Sensitive-class documents.
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  targetType String
+  targetId   String?
+  metadata   String?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([targetType, targetId])
+  @@index([createdAt])
+}

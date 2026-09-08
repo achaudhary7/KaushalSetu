@@ -1,6 +1,6 @@
 # PROGRESS — KaushalSetu Live Status Board
 
-**Last updated:** 2026-09-08 · **Current phase:** Phase 3 — Data Model & Skill Taxonomy
+**Last updated:** 2026-09-08 · **Current phase:** Phase 4 — Authentication, Roles & Onboarding
 
 > This file is the source of truth for *where we are*. Update it at the end of every work session.
 > Detail lives in `docs/phases/`; this is the dashboard.
@@ -13,7 +13,7 @@
 Phase  0  ██████████████████████████  ✅ Complete
 Phase  1  ██████████████████████████  ✅ Complete
 Phase  2  ██████████████████████████  ✅ Complete
-Phase  3  ░░░░░░░░░░░░░░░░░░░░░░░░░░  ⬜ Not Started
+Phase  3  ██████████████████████████  ✅ Complete
 Phase  4  ░░░░░░░░░░░░░░░░░░░░░░░░░░  ⬜ Not Started
 Phase  5  ░░░░░░░░░░░░░░░░░░░░░░░░░░  ⬜ Not Started
 Phase  6  ░░░░░░░░░░░░░░░░░░░░░░░░░░  ⬜ Not Started
@@ -28,7 +28,7 @@ Phase 14  ░░░░░░░░░░░░░░░░░░░░░░░�
 Phase 15  ░░░░░░░░░░░░░░░░░░░░░░░░░░  ⬜ Not Started
 ```
 
-**Completed:** 3 / 16 phases
+**Completed:** 4 / 16 phases
 
 ---
 
@@ -39,7 +39,7 @@ Phase 15  ░░░░░░░░░░░░░░░░░░░░░░░�
 | 0 | Foundation & Project Setup | ✅ Complete | 2026-09-07 | 2026-09-07 | ✅ | [spec](docs/phases/phase-00-foundation.md) |
 | 1 | Design System & Brand | ✅ Complete | 2026-09-07 | 2026-09-08 | ✅ | [spec](docs/phases/phase-01-design-system.md) |
 | 2 | Public Site & SEO Core | ✅ Complete | 2026-09-08 | 2026-09-08 | ✅ | [spec](docs/phases/phase-02-public-seo.md) |
-| 3 | Data Model & Skill Taxonomy | ⬜ Not Started | — | — | ⬜ | [spec](docs/phases/phase-03-data-model.md) |
+| 3 | Data Model & Skill Taxonomy | ✅ Complete | 2026-09-08 | 2026-09-08 | ✅ | [spec](docs/phases/phase-03-data-model.md) |
 | 4 | Auth, Roles & Onboarding | ⬜ Not Started | — | — | ⬜ | [spec](docs/phases/phase-04-auth-rbac.md) |
 | 5 | Assessment & Skill Profile | ⬜ Not Started | — | — | ⬜ | [spec](docs/phases/phase-05-assessment.md) |
 | 6 | Matching & Recommendations | ⬜ Not Started | — | — | ⬜ | [spec](docs/phases/phase-06-matching.md) |
@@ -58,6 +58,32 @@ Phase 15  ░░░░░░░░░░░░░░░░░░░░░░░�
 ## Session log
 
 Append one entry per working session. Newest first.
+
+### 2026-09-08 — Session 4
+
+- **Completed Phase 3.** Prisma schema with **56 models and 20 enums**, one migration, and a seed
+  that builds the full demo world in **7 seconds**.
+- **The seed imports from `src/content/`** rather than duplicating it, and `assertCatalogueComplete()`
+  fails loudly if content references a skill the taxonomy does not define — so the Phase 2 contract
+  is enforced at seed time, not discovered as an FK error later.
+- **Two Prisma 7 surprises, both investigated rather than assumed** (ADR-011). `npm install prisma`
+  pulled an **8.0 release candidate** — Prisma's `latest` dist-tag currently points at one, while
+  the client resolved to stable 7.10. Both are now pinned. And Prisma 7 moved the datasource URL out
+  of the schema and requires a driver adapter, so the MySQL swap is three places, not one.
+- **Tested rather than trusted the received wisdom that SQLite cannot do Prisma enums** — it can, on
+  7.10. Schema principle 4 holds in dev as well as production.
+- Taxonomy: 12 categories, 48 skills, 14 relations. Ayush branches built deepest, with 12 skills
+  carrying an explicit **NCISM curriculum area**.
+- The demo data is a story: Ananya is clinically strong with gaps in exactly the skills the thin-
+  competition Ayush paths need. A company is deliberately left PENDING verification, a certificate
+  is deliberately revoked, and one outcome survey is deliberately unanswered — so the admin queue,
+  the revocation path and honest response rates are all demonstrable.
+- Verified: **8/8 integrity checks pass**, including "no published opportunity from an unverified
+  company" and "no rejection without a coded reason". Full verification suite runs in 334ms.
+- `prisma migrate reset` is blocked for AI agents by design; run once with explicit user consent.
+- **Next:** Phase 4 — authentication, five roles, RBAC and onboarding. Auth models already exist,
+  so no migration is needed; `passwordHash` currently holds a seeded placeholder that Phase 4 must
+  replace with bcrypt.
 
 ### 2026-09-08 — Session 3
 
@@ -148,3 +174,6 @@ Things consciously postponed. Never delete a row — move it to Resolved.
 | `/offline` page + service worker | Phase 2 | Phase 12 | Meaningless without a service worker, which is Phase 12's PWA work. |
 | `hreflang` declarations | Phase 2 | When Hindi exists | Emitting hreflang for a single locale is noise. Pattern documented in the SEO checklist. |
 | Lighthouse measurement | Phase 2 | Phase 12 | No Chrome automation in this environment. No score claimed until actually measured. |
+| Electronics & design skill branches | Phase 3 | When a career path needs them | No content references them; seeding unused rows helps nobody. |
+| SVG ER diagram | Phase 3 | Phase 15 | 56 models will not fit one readable diagram. A focused matching-path diagram belongs in the pitch deck. |
+| Public pages reading from the database | Phase 3 | Phases 6–8 | Phase 2 pages still read `src/content/` fixtures. The schema now satisfies that contract; swapping the imports is each feature phase's job. |

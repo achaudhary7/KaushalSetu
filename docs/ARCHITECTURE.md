@@ -9,7 +9,7 @@
 | Language | TypeScript, `strict` | 5.x |
 | Styling | Tailwind CSS | 4.x |
 | Primitives | Radix UI | latest |
-| ORM | Prisma | 6.x |
+| ORM | Prisma (+ `@prisma/adapter-better-sqlite3`) | 7.10.x, pinned — see ADR-011 |
 | Database | SQLite (dev) → MySQL 8 (prod) | — |
 | Auth | Auth.js (NextAuth) v5, credentials + JWT | 5.x |
 | Validation | Zod | 4.x |
@@ -27,9 +27,9 @@ charging mid-project.
 ```
 kaushalsetu/
 ├── prisma/
-│   ├── schema.prisma            Single source of truth for the data model
+│   ├── schema.prisma            Single source of truth for the data model (56 models)
 │   ├── migrations/
-│   └── seed/                    Split by domain: taxonomy, careers, users, opportunities
+│   └── seed/                    taxonomy · reference · demo-world · assessment · pipeline · index
 ├── public/
 │   ├── icon.svg  favicon.ico  apple-touch-icon.png
 │   └── manifest.webmanifest
@@ -61,6 +61,9 @@ kaushalsetu/
 │   │   ├── validators/          Zod schemas, shared client and server
 │   │   ├── env.ts               Validated environment access
 │   │   └── utils/
+│   ├── content/                 Typed fixtures: careers, skills, opportunities,
+│   │                            resources, faqs, legal. The contract the schema satisfies.
+│   ├── generated/prisma/        Prisma client — generated, git-ignored
 │   ├── config/
 │   │   ├── site.ts              Name, tagline, URLs, contact, social
 │   │   ├── navigation.ts        Header, footer, per-role sidebar nav
@@ -89,7 +92,8 @@ inside a server-rendered card, not the other way around.
 
 ## Data access
 
-- One Prisma client singleton (`src/lib/db/client.ts`) to survive dev hot-reload.
+- One Prisma client singleton (`src/lib/db/client.ts`) to survive dev hot-reload. Prisma 7
+  requires a driver adapter, so this file is also where the SQLite/MySQL swap happens.
 - Queries live in `src/lib/db/queries/<domain>.ts`, never inline in components.
 - **Every query is scoped to the caller.** `requireUser()` / `requireRole()` / `requireOwnership()`
   from `src/lib/auth/guards.ts` run inside the query or the server action — middleware is a

@@ -30,10 +30,28 @@ Reference docs: [architecture](docs/ARCHITECTURE.md) · [design system](docs/DES
 cd app
 npm install
 cp .env.example .env
+npm run db:seed        # builds the full demo world in ~7s
 npm run dev            # http://localhost:3000
 ```
 
-Requires Node 20.9+ (developed on 24). No database or external service is needed until Phase 3.
+Requires Node 20.9+ (developed on 24). No external service is needed — the database is a local
+SQLite file. `npm install` generates the Prisma client automatically via `postinstall`, which
+`typecheck` and the seed both need.
+
+### Demo accounts
+
+Password `KaushalSetu@2026` for all of them.
+
+| Role | Email |
+| --- | --- |
+| Student (3rd-year BAMS — the main demo thread) | `ananya@student.aiia.gov.in` |
+| Student (1st year — micro-internship story) | `rahul@student.spit.ac.in` |
+| Academician | `meera.iyer@aiia.gov.in` |
+| Industry (verified employer) | `vikram@himalayawellness.example` |
+| Institution | `placements@aiia.gov.in` |
+| Admin | `admin@kaushalsetu.in` |
+
+The seed also prints two verifiable certificate codes to try at `/verify` — one valid, one revoked.
 
 ### Scripts
 
@@ -45,7 +63,10 @@ Requires Node 20.9+ (developed on 24). No database or external service is needed
 | `npm run typecheck` | TypeScript, no emit |
 | `npm run lint` | ESLint |
 | `npm run format` | Prettier, write |
-| `npm run check` | typecheck + lint + format check — run before every commit |
+| `npm run check` | typecheck + lint + format + contrast audit — run before every commit |
+| `npm run db:seed` | Rebuild the demo world (wipes and re-seeds; ~7s) |
+| `npm run db:studio` | Browse the database |
+| `npm run db:reset` | Drop, migrate and re-seed. **Destructive** — Prisma blocks AI agents from running this without explicit consent. |
 
 ## What it does
 
@@ -86,8 +107,8 @@ institution.
 
 ## Stack
 
-Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 · Prisma · SQLite → MySQL · Auth.js ·
-Recharts · Vitest + Playwright.
+Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 · Prisma 7 (pinned) · SQLite → MySQL ·
+Auth.js · Recharts · Vitest + Playwright.
 
 Everything is free and self-hostable. Nothing in this stack can expire, rate-limit us, or start
 charging mid-project.
@@ -106,4 +127,8 @@ host a Node.js app. Details and free alternatives in [`docs/DEPLOYMENT.md`](docs
 
 ## Status
 
-Phase 0 of 16 — see [`PROGRESS.md`](PROGRESS.md).
+Phase 3 of 16 complete — see [`PROGRESS.md`](PROGRESS.md).
+
+- **Live now:** the full public site (57 indexable pages), the design system, and the database with
+  a seeded demo world.
+- **Next:** authentication and role-based access.
