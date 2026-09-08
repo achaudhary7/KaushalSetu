@@ -114,7 +114,9 @@
   --color-fg-inverse: var(--color-neutral-0);
 
   --color-border: var(--color-neutral-200);
-  --color-border-strong: var(--color-neutral-300);
+  /* border-strong identifies form controls, so WCAG 1.4.11 applies: 3:1 against the
+     surface behind it. neutral-300 measured 1.48 and failed; neutral-500 is 4.76. */
+  --color-border-strong: var(--color-neutral-500);
 
   --color-brand: var(--color-primary-800);
   --color-brand-hover: var(--color-primary-700);
@@ -132,7 +134,7 @@
 
   /* Verification tiers - load-bearing, see ADR-006. Must be distinguishable
      at a glance AND in greyscale print. */
-  --color-tier-self: var(--color-neutral-400);
+  --color-tier-self: var(--color-neutral-500);
   --color-tier-assessed: var(--color-primary-700);
   --color-tier-endorsed: var(--color-accent-700);
 
@@ -167,12 +169,12 @@
     --color-surface-sunken: var(--color-neutral-950);
 
     --color-fg: var(--color-neutral-50);
-    --color-fg-muted: var(--color-neutral-400);
-    --color-fg-subtle: var(--color-neutral-500);
+    --color-fg-muted: var(--color-neutral-300);
+    --color-fg-subtle: var(--color-neutral-400);
     --color-fg-inverse: var(--color-neutral-900);
 
     --color-border: var(--color-neutral-800);
-    --color-border-strong: var(--color-neutral-700);
+    --color-border-strong: var(--color-neutral-500);
 
     --color-brand: var(--color-primary-400);
     --color-brand-hover: var(--color-primary-300);
@@ -188,7 +190,7 @@
     --color-info: var(--color-primary-400);
     --color-info-subtle: var(--color-primary-950);
 
-    --color-tier-self: var(--color-neutral-500);
+    --color-tier-self: var(--color-neutral-400);
     --color-tier-assessed: var(--color-primary-400);
     --color-tier-endorsed: var(--color-accent-400);
 
@@ -205,12 +207,12 @@
   --color-surface-sunken: var(--color-neutral-950);
 
   --color-fg: var(--color-neutral-50);
-  --color-fg-muted: var(--color-neutral-400);
-  --color-fg-subtle: var(--color-neutral-500);
+  --color-fg-muted: var(--color-neutral-300);
+  --color-fg-subtle: var(--color-neutral-400);
   --color-fg-inverse: var(--color-neutral-900);
 
   --color-border: var(--color-neutral-800);
-  --color-border-strong: var(--color-neutral-700);
+  --color-border-strong: var(--color-neutral-500);
 
   --color-brand: var(--color-primary-400);
   --color-brand-hover: var(--color-primary-300);
@@ -226,7 +228,7 @@
   --color-info: var(--color-primary-400);
   --color-info-subtle: var(--color-primary-950);
 
-  --color-tier-self: var(--color-neutral-500);
+  --color-tier-self: var(--color-neutral-400);
   --color-tier-assessed: var(--color-primary-400);
   --color-tier-endorsed: var(--color-accent-400);
 

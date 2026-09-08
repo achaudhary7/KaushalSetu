@@ -1,6 +1,6 @@
 # PROGRESS — KaushalSetu Live Status Board
 
-**Last updated:** 2026-09-07 · **Current phase:** Phase 1 — Design System & Brand Identity
+**Last updated:** 2026-09-08 · **Current phase:** Phase 2 — Public Marketing Site & SEO Core
 
 > This file is the source of truth for *where we are*. Update it at the end of every work session.
 > Detail lives in `docs/phases/`; this is the dashboard.
@@ -11,7 +11,7 @@
 
 ```
 Phase  0  ██████████████████████████  ✅ Complete
-Phase  1  ░░░░░░░░░░░░░░░░░░░░░░░░░░  ⬜ Not Started
+Phase  1  ██████████████████████████  ✅ Complete
 Phase  2  ░░░░░░░░░░░░░░░░░░░░░░░░░░  ⬜ Not Started
 Phase  3  ░░░░░░░░░░░░░░░░░░░░░░░░░░  ⬜ Not Started
 Phase  4  ░░░░░░░░░░░░░░░░░░░░░░░░░░  ⬜ Not Started
@@ -28,7 +28,7 @@ Phase 14  ░░░░░░░░░░░░░░░░░░░░░░░�
 Phase 15  ░░░░░░░░░░░░░░░░░░░░░░░░░░  ⬜ Not Started
 ```
 
-**Completed:** 1 / 16 phases
+**Completed:** 2 / 16 phases
 
 ---
 
@@ -37,7 +37,7 @@ Phase 15  ░░░░░░░░░░░░░░░░░░░░░░░�
 | # | Phase | Status | Started | Completed | Summary written | Spec |
 | --- | --- | --- | --- | --- | --- | --- |
 | 0 | Foundation & Project Setup | ✅ Complete | 2026-09-07 | 2026-09-07 | ✅ | [spec](docs/phases/phase-00-foundation.md) |
-| 1 | Design System & Brand | ⬜ Not Started | — | — | ⬜ | [spec](docs/phases/phase-01-design-system.md) |
+| 1 | Design System & Brand | ✅ Complete | 2026-09-07 | 2026-09-08 | ✅ | [spec](docs/phases/phase-01-design-system.md) |
 | 2 | Public Site & SEO Core | ⬜ Not Started | — | — | ⬜ | [spec](docs/phases/phase-02-public-seo.md) |
 | 3 | Data Model & Skill Taxonomy | ⬜ Not Started | — | — | ⬜ | [spec](docs/phases/phase-03-data-model.md) |
 | 4 | Auth, Roles & Onboarding | ⬜ Not Started | — | — | ⬜ | [spec](docs/phases/phase-04-auth-rbac.md) |
@@ -58,6 +58,23 @@ Phase 15  ░░░░░░░░░░░░░░░░░░░░░░░�
 ## Session log
 
 Append one entry per working session. Newest first.
+
+### 2026-09-08 — Session 2
+
+- Pushed the repository to https://github.com/achaudhary7/KaushalSetu (public, `main`).
+- **Completed Phase 1.** Logo and full favicon/PWA icon set, 60 inline SVG icons, 8 scene
+  illustrations, the complete token system, 20+ UI primitives on Radix, `Header`, `Footer`,
+  `DashboardShell`, and `/style-guide` rendering all of it.
+- **Measured contrast instead of assuming it — four token pairs failed.** `border-strong`
+  (1.48 light / 1.95 dark), light `tier-self` (2.56) and dark `fg-subtle` on surface (3.75).
+  Tokens corrected; now **38/38 pass** in both themes. The audit is now a committed script
+  (`scripts/check-contrast.py`) wired into `npm run check`, so this cannot silently regress.
+- Navigation moved into `config/navigation.ts` with a `planned` flag, so nav never links to a
+  404. Phase 2 flips those flags as pages land.
+- Verified: typecheck / lint / format / contrast / build all clean; both routes 200; all brand
+  assets serve; `BreadcrumbList` JSON-LD present; CSS ~10.5 KB gzipped.
+- **Next:** Phase 2 — the full public site and the SEO engine (`buildMetadata` everywhere,
+  `jsonld.ts`, `sitemap.ts`, `robots.ts`, OG images, 25+ pages).
 
 ### 2026-09-07 — Session 1
 - Read the problem statement, the Ayush/AIIA context, and the Google SEO reference set in `../SEO IMPs`.
@@ -99,3 +116,7 @@ Things consciously postponed. Never delete a row — move it to Resolved.
 | Real certification-provider integrations | Phase 8 | Out of scope | No partner access. Clean interface + mock adapter, stated openly. |
 | Payments / paid plans | Phase 2 | Post-hackathon | Pricing page describes tiers; no gateway. |
 | Native mobile apps | — | Post-hackathon | PWA covers the demo need. |
+| Gradient-mesh background SVG | Phase 1 | Phase 2 | Only the hero will use it; building it blind would be guesswork. |
+| `prefers-contrast` handling | Phase 1 | Phase 12 | Phase 12 owns the full accessibility pass. |
+| `Table` sort logic + mobile card fallback | Phase 1 | Phase 7 | Needs a real dataset to design against. |
+| Keyboard, screen-reader and axe passes | Phase 1 | Phase 12 | Contrast is verified; the rest is Phase 12's scope. Do not claim AA conformance before then. |

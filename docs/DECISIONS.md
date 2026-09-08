@@ -153,6 +153,27 @@ particularly in Phase 2. Zod 4 changes error formatting: `z.treeifyError()` repl
 
 ---
 
+## ADR-010 · Contrast is asserted by a script, not reviewed by eye · 2026-09-08 · Accepted
+
+**Context.** WCAG AA contrast is easy to claim and easy to get wrong. Phase 1 defined a two-theme
+token system where every semantic colour is indirected through a palette, which makes the actual
+rendered ratios non-obvious from reading the CSS.
+
+**Decision.** `app/scripts/check-contrast.py` parses the tokens out of `globals.css`, resolves the
+semantic layer for both themes, and asserts every pair the product actually renders. It runs as
+part of `npm run check`.
+
+**Consequences.** The first run **failed four pairs** that looked fine by eye: `--color-border-strong`
+at 1.48:1 (light) and 1.95:1 (dark) against their surfaces, light `--color-tier-self` at 2.56:1,
+and dark `--color-fg-subtle` at 3.75:1 on surface. All four were fixed at the token level rather
+than patched per component. It also forced an explicit, defensible decision to exclude decorative
+`--color-border` from the 3:1 rule, documented in the script itself. The cost is a Python
+dependency in the check pipeline; the benefit is that a future token change that breaks contrast
+fails the gate instead of shipping. This does **not** make the product WCAG AA conformant on its
+own — keyboard, screen reader and axe passes remain Phase 12's work.
+
+---
+
 <!--
 Template for new entries:
 

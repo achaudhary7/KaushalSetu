@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
 
+import { ThemeProvider } from '@/components/layout/theme'
+import { TooltipProvider } from '@/components/ui/overlay'
+import { ToastProvider } from '@/components/ui/toast'
 import { siteConfig } from '@/config/site'
 import '@/styles/globals.css'
 
@@ -58,12 +61,22 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en-IN" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+    // suppressHydrationWarning: next-themes stamps data-theme on <html> before
+    // hydration, so the server and client markup differ by design.
+    <html
+      lang="en-IN"
+      className={`${inter.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
+    >
       <body>
         <a href="#main" className="skip-link">
           Skip to main content
         </a>
-        {children}
+        <ThemeProvider>
+          <TooltipProvider delayDuration={200}>
+            <ToastProvider>{children}</ToastProvider>
+          </TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
