@@ -1,6 +1,6 @@
 # PROGRESS — KaushalSetu Live Status Board
 
-**Last updated:** 2026-09-08 · **Current phase:** Phase 2 — Public Marketing Site & SEO Core
+**Last updated:** 2026-09-08 · **Current phase:** Phase 3 — Data Model & Skill Taxonomy
 
 > This file is the source of truth for *where we are*. Update it at the end of every work session.
 > Detail lives in `docs/phases/`; this is the dashboard.
@@ -12,7 +12,7 @@
 ```
 Phase  0  ██████████████████████████  ✅ Complete
 Phase  1  ██████████████████████████  ✅ Complete
-Phase  2  ░░░░░░░░░░░░░░░░░░░░░░░░░░  ⬜ Not Started
+Phase  2  ██████████████████████████  ✅ Complete
 Phase  3  ░░░░░░░░░░░░░░░░░░░░░░░░░░  ⬜ Not Started
 Phase  4  ░░░░░░░░░░░░░░░░░░░░░░░░░░  ⬜ Not Started
 Phase  5  ░░░░░░░░░░░░░░░░░░░░░░░░░░  ⬜ Not Started
@@ -28,7 +28,7 @@ Phase 14  ░░░░░░░░░░░░░░░░░░░░░░░�
 Phase 15  ░░░░░░░░░░░░░░░░░░░░░░░░░░  ⬜ Not Started
 ```
 
-**Completed:** 2 / 16 phases
+**Completed:** 3 / 16 phases
 
 ---
 
@@ -38,7 +38,7 @@ Phase 15  ░░░░░░░░░░░░░░░░░░░░░░░�
 | --- | --- | --- | --- | --- | --- | --- |
 | 0 | Foundation & Project Setup | ✅ Complete | 2026-09-07 | 2026-09-07 | ✅ | [spec](docs/phases/phase-00-foundation.md) |
 | 1 | Design System & Brand | ✅ Complete | 2026-09-07 | 2026-09-08 | ✅ | [spec](docs/phases/phase-01-design-system.md) |
-| 2 | Public Site & SEO Core | ⬜ Not Started | — | — | ⬜ | [spec](docs/phases/phase-02-public-seo.md) |
+| 2 | Public Site & SEO Core | ✅ Complete | 2026-09-08 | 2026-09-08 | ✅ | [spec](docs/phases/phase-02-public-seo.md) |
 | 3 | Data Model & Skill Taxonomy | ⬜ Not Started | — | — | ⬜ | [spec](docs/phases/phase-03-data-model.md) |
 | 4 | Auth, Roles & Onboarding | ⬜ Not Started | — | — | ⬜ | [spec](docs/phases/phase-04-auth-rbac.md) |
 | 5 | Assessment & Skill Profile | ⬜ Not Started | — | — | ⬜ | [spec](docs/phases/phase-05-assessment.md) |
@@ -58,6 +58,30 @@ Phase 15  ░░░░░░░░░░░░░░░░░░░░░░░�
 ## Session log
 
 Append one entry per working session. Newest first.
+
+### 2026-09-08 — Session 3
+
+- **Completed Phase 2.** The entire public site: **57 indexable pages**, all returning 200.
+  15 marketing pages, 11 career paths, 10 skill hubs, 8 opportunity listings with a crawlable
+  faceted search, 4 insight articles, and the full legal set (DPDP-aligned privacy, accessibility
+  statement, named grievance officer).
+- Built the SEO engine every later phase reuses: `buildMetadata()` (used by all 57 pages),
+  `lib/seo/jsonld.ts` with 11 typed builders, `sitemap.ts`, `robots.ts`, and an OG image generated
+  from SVG at request time.
+- **Content moved to `src/content/` as typed fixtures** — careers, skills, opportunities, articles,
+  FAQs, legal. **This is now the contract Phase 3's Prisma schema must satisfy.**
+- Ayush content is the differentiator and got the most work: 8 Ayush career paths with real skill
+  weights, salary bands, entry routes and free SWAYAM/NPTEL courses, plus a flagship article on what
+  a BAMS graduate can actually do. Three generic paths sit alongside to prove domain-agnosticism.
+- **Caught and fixed 27 of our own SEO violations.** A crawl of all 57 pages found titles and
+  descriptions breaching the length limits in our own checklist. All rewritten; now zero violations,
+  zero duplicate titles, zero duplicate descriptions.
+- Verified by crawling every sitemap URL: 57 × 200, one h1 each, canonical + OG on all, 91 valid
+  JSON-LD nodes across 10 types, 404 returns a real 404, facets filter server-side, `JobPosting`
+  payload complete.
+- **Not done, recorded honestly:** `/help`, `/offline`, `hreflang`, and Lighthouse (no Chrome
+  automation available — no performance score is claimed; Phase 12 owns it).
+- **Next:** Phase 3 — Prisma schema and the seed data, modelled against the `src/content/` contract.
 
 ### 2026-09-08 — Session 2
 
@@ -120,3 +144,7 @@ Things consciously postponed. Never delete a row — move it to Resolved.
 | `prefers-contrast` handling | Phase 1 | Phase 12 | Phase 12 owns the full accessibility pass. |
 | `Table` sort logic + mobile card fallback | Phase 1 | Phase 7 | Needs a real dataset to design against. |
 | Keyboard, screen-reader and axe passes | Phase 1 | Phase 12 | Contrast is verified; the rest is Phase 12's scope. Do not claim AA conformance before then. |
+| `/help` centre | Phase 2 | Post-hackathon | The FAQ covers the same ground; a thin help centre is worse than none. |
+| `/offline` page + service worker | Phase 2 | Phase 12 | Meaningless without a service worker, which is Phase 12's PWA work. |
+| `hreflang` declarations | Phase 2 | When Hindi exists | Emitting hreflang for a single locale is noise. Pattern documented in the SEO checklist. |
+| Lighthouse measurement | Phase 2 | Phase 12 | No Chrome automation in this environment. No score claimed until actually measured. |

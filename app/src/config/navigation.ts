@@ -30,25 +30,21 @@ export const audienceNav: NavGroup = {
       label: 'Students',
       href: '/for-students',
       description: 'Assess your skills, close the gaps, find internships',
-      planned: true,
     },
     {
       label: 'Industry',
       href: '/for-industry',
       description: 'Post roles, screen on verified skills, hire faster',
-      planned: true,
     },
     {
       label: 'Institutions',
       href: '/for-institutions',
       description: 'Track readiness, see the curriculum gap, prove outcomes',
-      planned: true,
     },
     {
       label: 'Academicians',
       href: '/for-academicians',
       description: 'FDPs, faculty internships, consultancy and research',
-      planned: true,
     },
   ],
 }
@@ -60,40 +56,35 @@ export const exploreNav: NavGroup = {
       label: 'Opportunities',
       href: '/opportunities',
       description: 'Internships, jobs, micro-internships and live projects',
-      planned: true,
     },
     {
       label: 'Career paths',
       href: '/careers',
       description: 'Where a qualification can actually take you',
-      planned: true,
     },
     {
       label: 'Skills',
       href: '/skills',
       description: 'What each skill is, who wants it, where to learn it free',
-      planned: true,
     },
     {
       label: 'Ayush careers',
       href: '/ayush',
       description: 'BAMS, BHMS and BUMS routes into industry',
-      planned: true,
     },
     {
       label: 'Verify a certificate',
       href: '/verify',
       description: 'Check any KaushalSetu certificate in seconds',
-      planned: true,
     },
   ],
 }
 
 export const primaryNav: NavItem[] = [
-  { label: 'How it works', href: '/how-it-works', planned: true },
-  { label: 'Features', href: '/features', planned: true },
-  { label: 'Resources', href: '/resources', planned: true },
-  { label: 'About', href: '/about', planned: true },
+  { label: 'How it works', href: '/how-it-works' },
+  { label: 'Features', href: '/features' },
+  { label: 'Resources', href: '/resources' },
+  { label: 'About', href: '/about' },
 ]
 
 /* ---- Footer -------------------------------------------------------------- */
@@ -102,12 +93,12 @@ export const footerNav: NavGroup[] = [
   {
     label: 'Platform',
     items: [
-      { label: 'How it works', href: '/how-it-works', planned: true },
-      { label: 'Features', href: '/features', planned: true },
-      { label: 'Opportunities', href: '/opportunities', planned: true },
-      { label: 'Career paths', href: '/careers', planned: true },
-      { label: 'Skills', href: '/skills', planned: true },
-      { label: 'Pricing', href: '/pricing', planned: true },
+      { label: 'How it works', href: '/how-it-works' },
+      { label: 'Features', href: '/features' },
+      { label: 'Opportunities', href: '/opportunities' },
+      { label: 'Career paths', href: '/careers' },
+      { label: 'Skills', href: '/skills' },
+      { label: 'Pricing', href: '/pricing' },
     ],
   },
   {
@@ -117,23 +108,23 @@ export const footerNav: NavGroup[] = [
   {
     label: 'Resources',
     items: [
-      { label: 'Insights', href: '/resources', planned: true },
+      { label: 'Insights', href: '/resources' },
       { label: 'Help centre', href: '/help', planned: true },
-      { label: 'FAQ', href: '/faq', planned: true },
-      { label: 'Verify a certificate', href: '/verify', planned: true },
-      { label: 'Ayush careers', href: '/ayush', planned: true },
+      { label: 'FAQ', href: '/faq' },
+      { label: 'Verify a certificate', href: '/verify' },
+      { label: 'Ayush careers', href: '/ayush' },
       { label: 'Design system', href: '/style-guide' },
     ],
   },
   {
     label: 'Legal & trust',
     items: [
-      { label: 'Privacy policy', href: '/privacy', planned: true },
-      { label: 'Terms of use', href: '/terms', planned: true },
-      { label: 'Cookie policy', href: '/cookies', planned: true },
-      { label: 'Accessibility', href: '/accessibility', planned: true },
-      { label: 'Grievance officer', href: '/grievance', planned: true },
-      { label: 'Security disclosure', href: '/security', planned: true },
+      { label: 'Privacy policy', href: '/privacy' },
+      { label: 'Terms of use', href: '/terms' },
+      { label: 'Cookie policy', href: '/cookies' },
+      { label: 'Accessibility', href: '/accessibility' },
+      { label: 'Grievance officer', href: '/grievance' },
+      { label: 'Security disclosure', href: '/security' },
     ],
   },
 ]
